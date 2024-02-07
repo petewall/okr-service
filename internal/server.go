@@ -36,13 +36,25 @@ func (s *Server) Start() error {
 
 func (s *Server) handleGetAllOKRs(w http.ResponseWriter, r *http.Request) {
 	okrs := s.Datastore.GetAll()
-	data, _ := json.Marshal(okrs)
+	data, err := json.Marshal(okrs)
+	if err != nil {
+		log.Error("failed to convert OKRs into JSON: %w", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("failed to convert OKRs into JSON"))
+		return
+	}
 	_, _ = w.Write(data)
 }
 
 func (s *Server) handleGetOKRsByQuarter(w http.ResponseWriter, r *http.Request) {
 	quarter := chi.URLParam(r, "quarter")
 	okrs := s.Datastore.GetByQuarter(quarter)
-	data, _ := json.Marshal(okrs)
+	data, err := json.Marshal(okrs)
+	if err != nil {
+		log.Error("failed to convert OKRs into JSON: %w", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("failed to convert OKRs into JSON"))
+		return
+	}
 	_, _ = w.Write(data)
 }
