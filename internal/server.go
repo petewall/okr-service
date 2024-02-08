@@ -16,6 +16,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const DefaultPort = 8080
+
 type Server struct {
 	Port      int
 	Datastore Datastore
@@ -35,7 +37,7 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) handleGetAllOKRs(w http.ResponseWriter, r *http.Request) {
-	okrs := s.Datastore.GetAll()
+	okrs, _ := s.Datastore.GetAll()
 	data, err := json.Marshal(okrs)
 	if err != nil {
 		log.Error("failed to convert OKRs into JSON: %w", err)
@@ -48,7 +50,7 @@ func (s *Server) handleGetAllOKRs(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleGetOKRsByQuarter(w http.ResponseWriter, r *http.Request) {
 	quarter := chi.URLParam(r, "quarter")
-	okrs := s.Datastore.GetByQuarter(quarter)
+	okrs, _ := s.Datastore.GetByQuarter(quarter)
 	data, err := json.Marshal(okrs)
 	if err != nil {
 		log.Error("failed to convert OKRs into JSON: %w", err)

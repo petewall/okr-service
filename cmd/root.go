@@ -22,16 +22,14 @@ var rootCmd = &cobra.Command{
 		}
 
 		log.Info("Creating Datastore...")
-		datastore := &internal.InMemoryDatastore{
-			OKRs: []*internal.OKR{
-				internal.CreateOKR("2024 Q1", "Internal Work", internal.OKR_TYPE_BOOLEAN, "Create OKR Dashboard", 1),
-				internal.CreateOKR("2024 Q1", "Personal Growth", internal.OKR_TYPE_NUMBER, "Run 5 5ks", 5),
-			},
+		datastore, err := internal.InitializeDatastore()
+		if err != nil {
+			return err
 		}
 
 		server := &internal.Server{
 			Datastore: datastore,
-			Port:      viper.GetInt("port"),
+			Port:      viper.GetInt("server.port"),
 		}
 		return server.Start()
 	},
@@ -48,8 +46,17 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	rootCmd.Flags().IntP("port", "p", internal.DEFAULT_PORT, "Port number to listen on (env: PORT)")
-	_ = viper.BindPFlag("port", rootCmd.Flags().Lookup("port"))
+	rootCmd.Flags().IntP("port", "p", internal.DefaultPort, "Port number to listen on (env: PORT)")
+	_ = viper.BindPFlag("server.port", rootCmd.Flags().Lookup("port"))
+
+	rootCmd.Flags().String("datastore", "fs", "Datastore type (memory, fs)")
+	_ = viper.BindPFlag("datastore.type", rootCmd.Flags().Lookup("datastore"))
+
+	rootCmd.Flags().String("format", "yaml", "Datastore storage format (only for fs type)")
+	_ = viper.BindPFlag("datastore.format", rootCmd.Flags().Lookup("format"))
+
+	rootCmd.Flags().String("path", "", "Datastore storage path (only for fs type)")
+	_ = viper.BindPFlag("datastore.path", rootCmd.Flags().Lookup("path"))
 
 	rootCmd.Flags().Bool("debug", false, "Enable debug logging (env: DEBUG)")
 	_ = viper.BindPFlag("debug", rootCmd.Flags().Lookup("debug"))

@@ -5,6 +5,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
+const (
+	OKRTypeBoolean    = "boolean"
+	OKRTypeNumber     = "number"
+	OKRTypePercentage = "percent"
+)
+
 type OKR struct {
 	Quarter     string  `json:"quarter"`
 	Category    string  `json:"category"`
