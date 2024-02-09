@@ -10,7 +10,7 @@ import (
 )
 
 type FilesystemDatastore struct {
-	okrs   []*OKR
+	cache  *InMemoryDatastore
 	Path   string
 	Format string
 }
@@ -34,6 +34,9 @@ func (d *FilesystemDatastore) Initialize() error {
 		return fmt.Errorf("failed to parse data store file: %w", err)
 	}
 	log.Debugf("Found %d OKRs from the file", len(okrs))
+	d.cache = &InMemoryDatastore{
+		OKRs: okrs,
+	}
 
 	return nil
 }
@@ -43,9 +46,9 @@ func (d *FilesystemDatastore) save() error {
 	var err error
 
 	if d.Format == "json" {
-		data, err = json.Marshal(d.okrs)
+		data, err = json.Marshal(d.cache.OKRs)
 	} else if d.Format == "yaml" {
-		data, err = yaml.Marshal(d.okrs)
+		data, err = yaml.Marshal(d.cache.OKRs)
 	} else {
 		return fmt.Errorf("unsupported datastore format: %s", d.Format)
 	}
@@ -62,20 +65,37 @@ func (d *FilesystemDatastore) save() error {
 }
 
 func (d *FilesystemDatastore) Add(okr *OKR) error {
-	d.okrs = append(d.okrs, okr)
+	err := d.cache.Add(okr)
+	if err != nil {
+		return err
+	}
 	return d.save()
 }
 
+func (d *FilesystemDatastore) Update(updatedOKR *OKR) error {
+	err := d.cache.Update(updatedOKR)
+	if err != nil {
+		return err
+	}
+	return d.save()
+}
+
+func (d *FilesystemDatastore) Delete(id string) error {
+	err := d.cache.Delete(id)
+	if err != nil {
+		return err
+	}
+	return d.save()
+}
+
+func (d *FilesystemDatastore) Get(id string) (*OKR, error) {
+	return d.cache.Get(id)
+}
+
 func (d *FilesystemDatastore) GetAll() ([]*OKR, error) {
-	return d.okrs, nil
+	return d.cache.GetAll()
 }
 
 func (d *FilesystemDatastore) GetByQuarter(quarter string) ([]*OKR, error) {
-	var filtered []*OKR
-	for _, okr := range d.okrs {
-		if okr.Quarter == quarter {
-			filtered = append(filtered, okr)
-		}
-	}
-	return filtered, nil
+	return d.cache.GetByQuarter(quarter)
 }

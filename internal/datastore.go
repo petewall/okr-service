@@ -8,6 +8,9 @@ import (
 
 type Datastore interface {
 	Add(*OKR) error
+	Update(*OKR) error
+	Delete(id string) error
+	Get(id string) (*OKR, error)
 	GetAll() ([]*OKR, error)
 	GetByQuarter(quarter string) ([]*OKR, error)
 }

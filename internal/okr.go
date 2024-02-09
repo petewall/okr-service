@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -12,12 +13,13 @@ const (
 )
 
 type OKR struct {
-	Quarter     string  `json:"quarter"`
-	Category    string  `json:"category"`
-	ValueType   string  `json:"type"`
-	Description string  `json:"description"`
-	Goal        float64 `json:"goal"`
-	Progress    float64 `json:"progress"`
+	ID          string  `json:"id" yaml:"id"`
+	Quarter     string  `json:"quarter" yaml:"quarter"`
+	Category    string  `json:"category" yaml:"category"`
+	ValueType   string  `json:"type" yaml:"type"`
+	Description string  `json:"description" yaml:"description"`
+	Goal        float64 `json:"goal" yaml:"goal"`
+	Progress    float64 `json:"progress" yaml:"progress"`
 
 	goalMetric     prometheus.Gauge
 	progressMetric prometheus.Gauge
@@ -25,6 +27,7 @@ type OKR struct {
 
 func CreateOKR(quarter, category, valueType, description string, goal float64) *OKR {
 	okr := &OKR{
+		ID:          uuid.New().String(),
 		Quarter:     quarter,
 		Category:    category,
 		ValueType:   valueType,

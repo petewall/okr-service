@@ -29,33 +29,104 @@ func (s *Server) Start() error {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	r.Put("/api/okr", s.addOKR)
+	r.Post("/api/okr", s.updateOKR)
+	r.Get("/api/okr/<id>", s.getOKR)
+	r.Delete("/api/okr/<id>", s.deleteOKR)
+
+	r.Get("/api/okrs", s.getAllOKRs)
+	r.Get("/api/okrs/<quarter>", s.getOKRsByQuarter)
+
 	r.Get("/metrics", promhttp.Handler().ServeHTTP)
-	r.Get("/api/okrs", s.handleGetAllOKRs)
-	r.Get("/api/okrs/<quarter", promhttp.Handler().ServeHTTP)
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", s.Port), r)
 }
 
-func (s *Server) handleGetAllOKRs(w http.ResponseWriter, r *http.Request) {
-	okrs, _ := s.Datastore.GetAll()
-	data, err := json.Marshal(okrs)
+func (s *Server) getOKR(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	okr, err := s.Datastore.Get(id)
 	if err != nil {
-		log.Error("failed to convert OKRs into JSON: %w", err)
+		log.WithField("id", id).Error("failed to get OKR: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("failed to convert OKRs into JSON"))
+		_, _ = fmt.Fprintf(w, "failed to get OKR %s", id)
+		return
+	}
+
+	if okr == nil {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = fmt.Fprintf(w, "OKR with id %s not found", id)
+		return
+	}
+
+	data, err := json.Marshal(okr)
+	if err != nil {
+		log.Error("failed to convert OKR into JSON: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "failed to convert OKR into JSON")
 		return
 	}
 	_, _ = w.Write(data)
 }
 
-func (s *Server) handleGetOKRsByQuarter(w http.ResponseWriter, r *http.Request) {
+func (s *Server) addOKR(w http.ResponseWriter, r *http.Request) {
+	var okr *OKR
+	err := json.NewDecoder(r.Body).Decode(&okr)
+	if err != nil {
+		log.Error("failed to parse OKR: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = fmt.Fprintf(w, "failed to parse OKR: %s", err.Error())
+		return
+	}
+
+	s.Datastore.Add(CreateOKR(okr.Quarter, okr.Category, okr.ValueType, okr.Description, okr.Goal))
+}
+
+func (s *Server) updateOKR(w http.ResponseWriter, r *http.Request) {
+	var okr *OKR
+	err := json.NewDecoder(r.Body).Decode(&okr)
+	if err != nil {
+		log.Error("failed to parse OKR: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = fmt.Fprintf(w, "failed to parse OKR: %s", err.Error())
+		return
+	}
+
+	s.Datastore.Update(okr)
+}
+
+func (s *Server) deleteOKR(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	err := s.Datastore.Delete(id)
+	if err != nil {
+		log.WithField("id", id).Error("failed to delete OKR: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "failed to delete OKR %s", id)
+		return
+	}
+	_, _ = fmt.Fprintf(w, "OK")
+}
+
+func (s *Server) getAllOKRs(w http.ResponseWriter, r *http.Request) {
+	okrs, _ := s.Datastore.GetAll()
+	data, err := json.Marshal(okrs)
+	if err != nil {
+		log.Error("failed to convert OKRs into JSON: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "failed to convert OKRs into JSON")
+		return
+	}
+	_, _ = w.Write(data)
+}
+
+func (s *Server) getOKRsByQuarter(w http.ResponseWriter, r *http.Request) {
 	quarter := chi.URLParam(r, "quarter")
 	okrs, _ := s.Datastore.GetByQuarter(quarter)
 	data, err := json.Marshal(okrs)
 	if err != nil {
-		log.Error("failed to convert OKRs into JSON: %w", err)
+		log.Error("failed to convert OKRs into JSON: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("failed to convert OKRs into JSON"))
+		_, _ = fmt.Fprintf(w, "failed to convert OKRs into JSON")
 		return
 	}
 	_, _ = w.Write(data)
