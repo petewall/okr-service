@@ -47,15 +47,15 @@ func init() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	rootCmd.Flags().IntP("port", "p", internal.DefaultPort, "Port number to listen on (env: PORT)")
-	_ = viper.BindPFlag("server.port", rootCmd.Flags().Lookup("port"))
+	_ = viper.BindPFlag("port", rootCmd.Flags().Lookup("port"))
 
-	rootCmd.Flags().String("datastore", "fs", "Datastore type (memory, fs)")
+	rootCmd.Flags().String("datastore", "fs", "Datastore type (memory, fs) (env: DATASTORE_TYPE)")
 	_ = viper.BindPFlag("datastore.type", rootCmd.Flags().Lookup("datastore"))
 
-	rootCmd.Flags().String("format", "yaml", "Datastore storage format (only for fs type)")
+	rootCmd.Flags().String("format", "yaml", "Datastore storage format (only for fs type) (env: DATASTORE_FORMAT)")
 	_ = viper.BindPFlag("datastore.format", rootCmd.Flags().Lookup("format"))
 
-	rootCmd.Flags().String("path", "", "Datastore storage path (only for fs type)")
+	rootCmd.Flags().String("path", "", "Datastore storage path (only for fs type) (env: DATASTORE_PATH)")
 	_ = viper.BindPFlag("datastore.path", rootCmd.Flags().Lookup("path"))
 
 	rootCmd.Flags().Bool("debug", false, "Enable debug logging (env: DEBUG)")
