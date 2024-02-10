@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -16,28 +17,29 @@ type FilesystemDatastore struct {
 }
 
 func (d *FilesystemDatastore) Initialize() error {
+	var okrs []*OKR
+
 	log.Debugf("Loading OKRs from file: %s", d.Path)
 	data, err := os.ReadFile(d.Path)
-	if err != nil {
+	if err == nil {
+		if d.Format == "json" {
+			err = json.Unmarshal(data, &okrs)
+		} else if d.Format == "yaml" {
+			err = yaml.Unmarshal(data, &okrs)
+		} else {
+			return fmt.Errorf("unsupported datastore format: %s", d.Format)
+		}
+		if err != nil {
+			return fmt.Errorf("failed to parse data store file: %w", err)
+		}
+		log.Debugf("Found %d OKRs from the file", len(okrs))
+	} else if !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	var okrs []*OKR
-	if d.Format == "json" {
-		err = json.Unmarshal(data, &okrs)
-	} else if d.Format == "yaml" {
-		err = yaml.Unmarshal(data, &okrs)
-	} else {
-		return fmt.Errorf("unsupported datastore format: %s", d.Format)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to parse data store file: %w", err)
-	}
-	log.Debugf("Found %d OKRs from the file", len(okrs))
 	d.cache = &InMemoryDatastore{
 		OKRs: okrs,
 	}
-
 	return nil
 }
 

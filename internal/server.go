@@ -24,8 +24,7 @@ type Server struct {
 }
 
 func (s *Server) Start() error {
-	log.Info("Starting HTTP server...")
-	log.Debugf("Using port %d", s.Port)
+	log.Infof("Starting HTTP server on port %d...", s.Port)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

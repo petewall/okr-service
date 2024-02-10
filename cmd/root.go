@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 
 		server := &internal.Server{
 			Datastore: datastore,
-			Port:      viper.GetInt("server.port"),
+			Port:      viper.GetInt("port"),
 		}
 		return server.Start()
 	},
