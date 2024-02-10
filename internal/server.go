@@ -29,6 +29,7 @@ func (s *Server) Start() error {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	r.Handle("/*", http.StripPrefix("/", http.FileServer(http.Dir("web"))))
 	r.Put("/api/okr", s.addOKR)
 	r.Post("/api/okr", s.updateOKR)
 	r.Get("/api/okr/{id}", s.getOKR)
