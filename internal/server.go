@@ -31,11 +31,11 @@ func (s *Server) Start() error {
 
 	r.Put("/api/okr", s.addOKR)
 	r.Post("/api/okr", s.updateOKR)
-	r.Get("/api/okr/<id>", s.getOKR)
-	r.Delete("/api/okr/<id>", s.deleteOKR)
+	r.Get("/api/okr/{id}", s.getOKR)
+	r.Delete("/api/okr/{id}", s.deleteOKR)
 
 	r.Get("/api/okrs", s.getAllOKRs)
-	r.Get("/api/okrs/<quarter>", s.getOKRsByQuarter)
+	r.Get("/api/okrs/{quarter}", s.getOKRsByQuarter)
 
 	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 
