@@ -7,7 +7,6 @@ DESCRIPTION=$4
 GOAL=$5
 
 OKR_SERVICE="${OKR_SERVICE:-http://localhost:8080}"
-set -x
 curl -X PUT "${OKR_SERVICE}/api/okr" --data \
     "$(jq -n \
     --arg quarter "${QUARTER}" \
