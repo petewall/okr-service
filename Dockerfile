@@ -21,4 +21,6 @@ EXPOSE 8080
 
 USER nonroot:nonroot
 
+VOLUME [ "/data" ]
+
 ENTRYPOINT ["/okr-service"]
