@@ -17,7 +17,7 @@ type FilesystemDatastore struct {
 }
 
 func (d *FilesystemDatastore) Initialize() error {
-	var okrs []*OKR
+	okrs := []*OKR{}
 
 	log.Debugf("Loading OKRs from file: %s", d.Path)
 	data, err := os.ReadFile(d.Path)

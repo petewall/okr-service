@@ -47,7 +47,7 @@ func (d *InMemoryDatastore) GetAll() ([]*OKR, error) {
 }
 
 func (d *InMemoryDatastore) GetByQuarter(quarter string) ([]*OKR, error) {
-	var filtered []*OKR
+	filtered := []*OKR{}
 	for _, okr := range d.OKRs {
 		if okr.Quarter == quarter {
 			filtered = append(filtered, okr)
