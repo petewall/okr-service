@@ -16,6 +16,7 @@ FROM gcr.io/distroless/base-debian11 AS build-release-stage
 WORKDIR /
 
 COPY --from=build-stage /okr-service /okr-service
+ADD web /web
 
 EXPOSE 8080
 
