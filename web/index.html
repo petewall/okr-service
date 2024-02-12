@@ -13,6 +13,22 @@
       <div class="header">Edit OKR</div>
       <div class="content">
         <div class="description">
+          <div class="ui header">Quarter</div>
+          <div class="ui input" style="width: 100%;">
+            <select class="quarter" class="ui dropdown">
+              <option value="Q1">Q1</option>
+              <option value="Q2">Q2</option>
+              <option value="Q3">Q3</option>
+              <option value="Q4">Q4</option>
+            </select>
+            <input class="year" type="number" min="2023" max="2030" step="1" value="2024" />
+          </div>
+
+          <div class="ui header">Category</div>
+          <div class="ui input" style="width: 100%;">
+            <input class="category" type="text" placeholder="Category goes here">
+          </div>
+
           <div class="ui header">Description</div>
           <div class="ui input" style="width: 100%;">
             <input class="description" type="text" placeholder="Description goes here">
@@ -27,7 +43,7 @@
                   <option value="boolean">Boolean</option>
                   <option value="number">Number</option>
                   <option value="percentage">Percentage</option>
-                </select>      
+                </select>
               </td>
               <td>
                 <div class="ui input" style="width: 100%;">
@@ -71,6 +87,10 @@
 
 
     <div class="ui container">
+      <button class="ui right floated positive labeled icon new button">
+        <i class="plus icon"></i>
+        New OKR
+      </button>
       <h1>OKRs</h1>
       <div id="okr-list"></div>
     </div>

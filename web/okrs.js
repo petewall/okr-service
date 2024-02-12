@@ -1,8 +1,45 @@
+function insertOKRRow(okr) {
+
+}
+
 function updateOKRRow(okr) {
 
 }
 
+function showNewModal() {
+  $(".ui.edit.modal>.header").text("New OKR")
+  $(".ui.edit.modal select.quarter").val("Q4")
+  $(".ui.edit.modal input.year").val(new Date().getFullYear())
+  $(".ui.edit.modal input.goal").val(1)
+  $(".ui.edit.modal").modal({
+    onApprove: function() {
+      const newOKR = {
+        quarter: `${$(".ui.edit.modal input.year").val()}${$(".ui.edit.modal select.quarter").val()}`,
+        category: $(".ui.edit.modal input.category").val(),
+        description: $(".ui.edit.modal input.description").val(),
+        type: $(".ui.edit.modal select.type").val(),
+        progress: parseFloat($(".ui.edit.modal input.progress").val()),
+        goal: parseFloat($(".ui.edit.modal input.goal").val())
+      }
+      $.ajax({
+        url: "http://localhost:8080/api/okr",
+        type: 'PUT',
+        data: JSON.stringify(newOKR),
+        contentType: "application/json",
+        success: function() {
+          insertOKRRow(newOKR)
+        }
+      })
+    }
+  })
+  $(".ui.edit.modal").modal("show")
+}
+
 function showEditModal(okr) {
+  $(".ui.edit.modal>.header").text("Edit OKR")
+  $(".ui.edit.modal select.quarter").val(okr.quarter.substring(4))
+  $(".ui.edit.modal input.year").val(okr.quarter.substring(0,4))
+  $(".ui.edit.modal input.category").val(okr.category)
   $(".ui.edit.modal input.description").val(okr.description)
   $(".ui.edit.modal select.type").val(okr.type)
   $(".ui.edit.modal input.progress").val(okr.progress)
@@ -11,8 +48,8 @@ function showEditModal(okr) {
     onApprove: function() {
       const newOKR = {
         id: okr.id,
-        quarter: okr.quarter,
-        category: okr.category,
+        quarter: `${$(".ui.edit.modal input.year").val()}${$(".ui.edit.modal select.quarter").val()}`,
+        category: $(".ui.edit.modal input.category").val(),
         description: $(".ui.edit.modal input.description").val(),
         type: $(".ui.edit.modal select.type").val(),
         progress: parseFloat($(".ui.edit.modal input.progress").val()),
@@ -116,5 +153,7 @@ $(document).ready(() => {
   $.get("http://localhost:8080/api/okrs", (data) => {
     const okrs = JSON.parse(data)
     setOKRs(okrs)
+
+    $(".new.button").click(showNewModal)
   })
 })
