@@ -7,6 +7,7 @@ Copyright © 2024 Pete Wall <pete@petewall.net>
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,7 +48,7 @@ func (s *Server) getOKR(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	okr, err := s.Datastore.Get(id)
 	if err != nil {
-		log.WithField("id", id).Error("failed to get OKR: ", err)
+		log.WithError(err).WithField("id", id).Error("failed to get OKR")
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprintf(w, "failed to get OKR %s", id)
 		return
@@ -61,7 +62,7 @@ func (s *Server) getOKR(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.Marshal(okr)
 	if err != nil {
-		log.Error("failed to convert OKR into JSON: ", err)
+		log.WithError(err).Error("failed to convert OKR into JSON")
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprintf(w, "failed to convert OKR into JSON")
 		return
@@ -73,7 +74,7 @@ func (s *Server) addOKR(w http.ResponseWriter, r *http.Request) {
 	var okr *OKR
 	err := json.NewDecoder(r.Body).Decode(&okr)
 	if err != nil {
-		log.Error("failed to parse OKR: ", err)
+		log.WithError(err).Error("failed to parse OKR")
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = fmt.Fprintf(w, "failed to parse OKR: %s", err.Error())
 		return
@@ -84,9 +85,17 @@ func (s *Server) addOKR(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) updateOKR(w http.ResponseWriter, r *http.Request) {
 	var okr *OKR
-	err := json.NewDecoder(r.Body).Decode(&okr)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("failed to parse OKR: ", err)
+		log.WithError(err).Error("failed to read request body")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = fmt.Fprintf(w, "failed to read request body: %s", err.Error())
+		return
+	}
+
+	err = json.Unmarshal(body, &okr)
+	if err != nil {
+		log.WithError(err).WithField("body", string(body)).Error("failed to parse OKR")
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = fmt.Fprintf(w, "failed to parse OKR: %s", err.Error())
 		return
@@ -99,7 +108,7 @@ func (s *Server) deleteOKR(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	err := s.Datastore.Delete(id)
 	if err != nil {
-		log.WithField("id", id).Error("failed to delete OKR: ", err)
+		log.WithError(err).WithField("id", id).Error("failed to delete OKR")
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprintf(w, "failed to delete OKR %s", id)
 		return
@@ -111,7 +120,7 @@ func (s *Server) getAllOKRs(w http.ResponseWriter, r *http.Request) {
 	okrs, _ := s.Datastore.GetAll()
 	data, err := json.Marshal(okrs)
 	if err != nil {
-		log.Error("failed to convert OKRs into JSON: ", err)
+		log.WithError(err).Error("failed to convert OKRs into JSON")
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprintf(w, "failed to convert OKRs into JSON")
 		return
@@ -124,7 +133,7 @@ func (s *Server) getOKRsByQuarter(w http.ResponseWriter, r *http.Request) {
 	okrs, _ := s.Datastore.GetByQuarter(quarter)
 	data, err := json.Marshal(okrs)
 	if err != nil {
-		log.Error("failed to convert OKRs into JSON: ", err)
+		log.WithError(err).Error("failed to convert OKRs into JSON")
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = fmt.Fprintf(w, "failed to convert OKRs into JSON")
 		return

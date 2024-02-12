@@ -1,3 +1,68 @@
+function updateOKRRow(okr) {
+
+}
+
+function showEditModal(okr) {
+  $(".ui.edit.modal input.description").val(okr.description)
+  $(".ui.edit.modal select.type").val(okr.type)
+  $(".ui.edit.modal input.progress").val(okr.progress)
+  $(".ui.edit.modal input.goal").val(okr.goal)
+  $(".ui.edit.modal").modal({
+    onApprove: function() {
+      const newOKR = {
+        id: okr.id,
+        quarter: okr.quarter,
+        category: okr.category,
+        description: $(".ui.edit.modal input.description").val(),
+        type: $(".ui.edit.modal select.type").val(),
+        progress: parseFloat($(".ui.edit.modal input.progress").val()),
+        goal: parseFloat($(".ui.edit.modal input.goal").val())
+      }
+      $.ajax({
+        url: "http://localhost:8080/api/okr",
+        type: 'POST',
+        data: JSON.stringify(newOKR),
+        contentType: "application/json",
+        success: function() {
+          updateOKRRow(newOKR)
+        }
+      })
+    }
+  })
+  $(".ui.edit.modal").modal("show")
+}
+
+function showDeleteModal(okr) {
+  $(".ui.delete.modal").modal({
+    onApprove: function() {
+      $.ajax({
+        url: `http://localhost:8080/api/okr/${okr.id}`,
+        type: 'DELETE',
+        success: function() {
+          $(`#${okr.id}`).remove()
+        }
+      })
+    }
+  })
+  $(".ui.delete.modal").modal("show")
+}
+
+function makeProgress(type, progress, goal) {
+  const percent = Math.round((progress / goal) * 100)
+
+  if (type == "boolean") {
+    if (progress == goal) {
+      return "Done!"
+    } else {
+      return "Not yet"
+    }
+  } else if (type == "number") {
+    return `${progress} / ${goal} (${percent}%)`
+  } else if (type == "percentage") {
+    return `${percent}%`
+  }
+}
+
 function setOKRs(okrs) {
   let structured = {}
   for (okr of okrs) {
@@ -17,26 +82,30 @@ function setOKRs(okrs) {
       $("<a>", {href: `#${quarter}`})
     )
     $(quarterSection).append($("<h2>", {text: quarter}))
-    
+    const okrTable = $("<table>", {class: "ui celled table"})
+
     const categories = Object.keys(structured[quarter]).sort()
     for (category of categories) {
-      const categorySection = $("<div>", {id: category})
-      const okrTable = $("<table>", {class: "okrList"})
+      okrTable.append($("<thead>").append($("<tr>").append(
+        $("<th>", {colspan: 3, text: category}))
+      ))
 
       const okrs = structured[quarter][category]
       for (okr of okrs) {
-        okrTable.append($("<tr>").append(
+        const myOKR = okr
+        const editButton = $("<i>", {class: "pencil icon"}).click(() => {showEditModal(myOKR)})
+        const deleteButton = $("<i>", {class: "trash icon"}).click(() => {showDeleteModal(myOKR)})
+
+        okrTable.append($("<tr>", {
+          id: okr.id
+        }).append(
           $("<td>", {class: "description", text: okr.description}),
-          $("<td>", {class: "progress", text: `${okr.progress} / ${okr.goal}`}),
-          $("<td>", {class: "tools", text: "X"})
+          $("<td>", {class: "collapsing progress"}).append(makeProgress(okr.type, okr.progress, okr.goal)),
+          $("<td>", {class: "collapsing tools"}).append(editButton, deleteButton)
         ))
       }
 
-      categorySection.append(
-        $("<h3>", {text: category}),
-        okrTable
-      )
-      $(quarterSection).append(categorySection)
+      $(quarterSection).append(okrTable)
     }
    
     $("#okr-list").append(quarterSection)
@@ -49,4 +118,3 @@ $(document).ready(() => {
     setOKRs(okrs)
   })
 })
-
