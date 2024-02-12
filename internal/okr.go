@@ -34,23 +34,50 @@ func CreateOKR(quarter, category, valueType, description string, goal float64) *
 		Description: description,
 		Goal:        goal,
 		Progress:    0,
-		goalMetric: promauto.NewGauge(prometheus.GaugeOpts{
+	}
+	okr.UpdateMetrics()
+	return okr
+}
+
+func (okr *OKR) promLabels() prometheus.Labels {
+	return prometheus.Labels{
+		"quarter":     okr.Quarter,
+		"category":    okr.Category,
+		"type":        okr.ValueType,
+		"description": okr.Description,
+	}
+}
+
+func (okr *OKR) UpdateMetrics() {
+	if okr.goalMetric == nil {
+		okr.goalMetric = promauto.NewGauge(prometheus.GaugeOpts{
 			Namespace:   "okr",
 			Subsystem:   "goal",
 			Name:        "info",
 			Help:        "A metric representing the goal of an OKR (objective and key result). Must have a matching okr_progress_info metric.",
-			ConstLabels: prometheus.Labels{"quarter": quarter, "category": category, "type": valueType, "description": description},
-		}),
-		progressMetric: promauto.NewGauge(prometheus.GaugeOpts{
+			ConstLabels: okr.promLabels(),
+		})
+	}
+	okr.goalMetric.Set(okr.Goal)
+
+	if okr.progressMetric == nil {
+		okr.progressMetric = promauto.NewGauge(prometheus.GaugeOpts{
 			Namespace:   "okr",
 			Subsystem:   "progress",
 			Name:        "info",
 			Help:        "A metric representing the progress of an OKR (objective and key result). Must have a matching okr_goal_info metric.",
-			ConstLabels: prometheus.Labels{"quarter": quarter, "category": category, "type": valueType, "description": description},
-		}),
+			ConstLabels: okr.promLabels(),
+		})
 	}
-	okr.goalMetric.Set(goal)
-	okr.progressMetric.Set(0)
+	okr.progressMetric.Set(okr.Progress)
+}
 
-	return okr
+func (okr *OKR) Set(other *OKR) {
+	okr.Quarter = other.Quarter
+	okr.Category = other.Category
+	okr.ValueType = other.ValueType
+	okr.Description = other.Description
+	okr.Goal = other.Goal
+	okr.Progress = other.Progress
+	okr.UpdateMetrics()
 }

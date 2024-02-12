@@ -12,9 +12,15 @@ func (d *InMemoryDatastore) Add(newOKR *OKR) error {
 }
 
 func (d *InMemoryDatastore) Update(updatedOKR *OKR) error {
-	for index, okr := range d.OKRs {
+	for _, okr := range d.OKRs {
 		if okr.ID == updatedOKR.ID {
-			d.OKRs[index] = updatedOKR
+			okr.Quarter = updatedOKR.Quarter
+			okr.Category = updatedOKR.Category
+			okr.ValueType = updatedOKR.ValueType
+			okr.Description = updatedOKR.Description
+			okr.Goal = updatedOKR.Goal
+			okr.Progress = updatedOKR.Progress
+			okr.UpdateMetrics()
 			return nil
 		}
 	}

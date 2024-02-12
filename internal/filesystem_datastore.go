@@ -33,6 +33,10 @@ func (d *FilesystemDatastore) Initialize() error {
 			return fmt.Errorf("failed to parse data store file: %w", err)
 		}
 		log.Debugf("Found %d OKRs from the file", len(okrs))
+
+		for _, okr := range okrs {
+			okr.UpdateMetrics()
+		}
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
