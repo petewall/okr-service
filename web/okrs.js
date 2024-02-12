@@ -6,10 +6,25 @@ function updateOKRRow(okr) {
 
 }
 
+function getCurrentQuarter() {
+  // Q1: February, March, April
+  // Q2: May, June, July
+  // Q3: August, September, October
+  // Q4: November, December, January
+
+  const month = new Date().getMonth()               // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+  const quarter = Math.floor((month-1)/3) % 4 + 1   // 4, 1, 1, 1, 2, 2, 2, 3, 3, 3,  4,  4
+  return `Q${quarter}`
+}
+
 function showNewModal() {
   $(".ui.edit.modal>.header").text("New OKR")
-  $(".ui.edit.modal select.quarter").val("Q4")
+  $(".ui.edit.modal select.quarter").val(getCurrentQuarter())
   $(".ui.edit.modal input.year").val(new Date().getFullYear())
+  $(".ui.edit.modal input.category").val("")
+  $(".ui.edit.modal input.description").val("")
+  $(".ui.edit.modal select.type").val("boolean")
+  $(".ui.edit.modal input.progress").val(0)
   $(".ui.edit.modal input.goal").val(1)
   $(".ui.edit.modal").modal({
     onApprove: function() {
