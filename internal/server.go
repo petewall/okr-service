@@ -80,7 +80,13 @@ func (s *Server) addOKR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.Datastore.Add(CreateOKR(okr.Quarter, okr.Category, okr.ValueType, okr.Description, okr.Goal))
+	err = s.Datastore.Add(CreateOKR(okr.Quarter, okr.Category, okr.ValueType, okr.Description, okr.Goal))
+	if err != nil {
+		log.WithError(err).Error("failed to save OKR")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "failed to save OKR")
+		return
+	}
 }
 
 func (s *Server) updateOKR(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +107,13 @@ func (s *Server) updateOKR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.Datastore.Update(okr)
+	err = s.Datastore.Update(okr)
+	if err != nil {
+		log.WithError(err).Error("failed to save OKR")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "failed to save OKR")
+		return
+	}
 }
 
 func (s *Server) deleteOKR(w http.ResponseWriter, r *http.Request) {
