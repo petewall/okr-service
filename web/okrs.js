@@ -6,6 +6,17 @@ function updateOKRRow() {
   location.reload()
 }
 
+function getCurrentFiscalYear() {
+  const year = new Date().getFullYear()
+  const month = new Date().getMonth()
+
+  // January is the only date where the fiscal year matches the calendar year
+  if (month == 0) {
+    return year
+  }
+  return year + 1
+}
+
 function getCurrentQuarter() {
   // Q1: February, March, April
   // Q2: May, June, July
@@ -20,7 +31,7 @@ function getCurrentQuarter() {
 function showNewModal() {
   $('.ui.edit.modal>.header').text('New OKR')
   $('.ui.edit.modal select.quarter').val(getCurrentQuarter())
-  $('.ui.edit.modal input.year').val(new Date().getFullYear())
+  $('.ui.edit.modal input.year').val(getCurrentFiscalYear())
   $('.ui.edit.modal input.category').val('')
   $('.ui.edit.modal input.description').val('')
   $('.ui.edit.modal select.type').val('boolean')
