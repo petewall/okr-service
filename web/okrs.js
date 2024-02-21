@@ -48,7 +48,7 @@ function showNewModal() {
         goal: parseFloat($('.ui.edit.modal input.goal').val())
       }
       $.ajax({
-        url: 'http://localhost:8080/api/okr',
+        url: 'api/okr',
         type: 'PUT',
         data: JSON.stringify(newOKR),
         contentType: 'application/json',
@@ -82,7 +82,7 @@ function showEditModal(okr) {
         goal: parseFloat($('.ui.edit.modal input.goal').val())
       }
       $.ajax({
-        url: 'http://localhost:8080/api/okr',
+        url: 'api/okr',
         type: 'POST',
         data: JSON.stringify(newOKR),
         contentType: 'application/json',
@@ -99,7 +99,7 @@ function showDeleteModal(okr) {
   $('.ui.delete.modal').modal({
     onApprove: function() {
       $.ajax({
-        url: `http://localhost:8080/api/okr/${okr.id}`,
+        url: `api/okr/${okr.id}`,
         type: 'DELETE',
         success: function() {
           $(`#${okr.id}`).remove()
@@ -176,7 +176,7 @@ function setOKRs(okrs) {
 }
 
 $(document).ready(() => {
-  $.get('http://localhost:8080/api/okrs', (data) => {
+  $.get('api/okrs', (data) => {
     const okrs = JSON.parse(data)
     setOKRs(okrs)
 
